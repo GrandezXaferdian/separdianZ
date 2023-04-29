@@ -1,9 +1,22 @@
-// ignore_for_file: prefer_const_constructors
+// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
+
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:percent_indicator/percent_indicator.dart';
+import 'package:fl_chart/fl_chart.dart';
 
-void main() => runApp(MaterialApp(home: Home()));
+import 'package:separdianz/graph.dart';
+import 'package:separdianz/profile.dart';
+import 'package:separdianz/progresscard.dart';
+
+void main() => runApp(MaterialApp(
+      home: Home(),
+      theme: ThemeData(
+          textButtonTheme: TextButtonThemeData(
+              style: TextButton.styleFrom(
+                  foregroundColor: Color.fromARGB(255, 187, 255, 252)))),
+    ));
 
 class Home extends StatelessWidget {
   const Home({super.key});
@@ -32,95 +45,94 @@ class Home extends StatelessWidget {
           ]),
       // ignore: prefer_const_constructors
       body: Center(
-        child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
+          child: SingleChildScrollView(
         physics: BouncingScrollPhysics(),
-        //padding: const EdgeInsets.all(12),
-        child: Row(
+        child: Column(
           children: [
-            SizedBox(width: 15.0),
-            ProfileAvatar(
-              progress: 0.2,
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              physics: BouncingScrollPhysics(),
+              //padding: const EdgeInsets.all(12),
+              child: Row(
+                children: [
+                  SizedBox(width: 15.0),
+                  ProfileAvatar(
+                    progress: 0.2,
+                  ),
+                  SizedBox(width: 12.0),
+                  ProfileAvatar(
+                    name: "Dainsleif",
+                    progress: 0.75,
+                    picpath: "assets/dainsleif.png",
+                    barcolor: Color.fromARGB(255, 247, 255, 173),
+                  ),
+                  SizedBox(width: 12.0),
+                  ProfileAvatar(
+                    name: "Kazuha",
+                    progress: 0.55,
+                    picpath: "assets/kazuha.jpg",
+                    barcolor: Color.fromARGB(255, 247, 255, 173),
+                  ),
+                  SizedBox(width: 12.0),
+                  ProfileAvatar(
+                    name: "Albedo",
+                    progress: 0.77,
+                    picpath: "assets/albedo.jpg",
+                    barcolor: Color.fromARGB(255, 247, 255, 173),
+                  ),
+                  SizedBox(width: 12.0),
+                  ProfileAvatar(
+                    name: "Kazuha",
+                    progress: 0.55,
+                    picpath: "assets/kazuha.jpg",
+                    barcolor: Color.fromARGB(255, 247, 255, 173),
+                  )
+                ],
+              ),
             ),
-            SizedBox(width: 12.0),
-            ProfileAvatar(
-              name: "Dainsleif",
-              progress: 0.75,
-              picpath: "assets/dainsleif.png",
-              barcolor: Color.fromARGB(255, 247, 255, 173),
+            Divider(
+              color: Color.fromARGB(40, 255, 255, 255),
+              endIndent: 15.0,
+              indent: 15.0,
             ),
-            SizedBox(width: 12.0),
-            ProfileAvatar(
-              name: "Kazuha",
-              progress: 0.55,
-              picpath: "assets/kazuha.jpg",
-              barcolor: Color.fromARGB(255, 247, 255, 173),
+            Padding(
+              padding: const EdgeInsets.all(18.0),
+              child: EfficiencyChart(),
             ),
-            SizedBox(width: 12.0),
-            ProfileAvatar(
-              name: "Albedo",
-              progress: 0.77,
-              picpath: "assets/albedo.jpg",
-              barcolor: Color.fromARGB(255, 247, 255, 173),
+            Divider(
+              color: Color.fromARGB(40, 255, 255, 255),
+              endIndent: 15.0,
+              indent: 15.0,
             ),
-            SizedBox(width: 12.0),
-            ProfileAvatar(
-              name: "Kazuha",
-              progress: 0.55,
-              picpath: "assets/kazuha.jpg",
-              barcolor: Color.fromARGB(255, 247, 255, 173),
-            )
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 18.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                // ignore: prefer_const_literals_to_create_immutables
+                children: [
+                  Text(
+                    '77% Progress!',
+                    style: TextStyle(
+                        fontSize: 20.0,
+                        color: Color.fromARGB(255, 176, 255, 217),
+                        fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    '4/7',
+                    style: TextStyle(
+                        fontSize: 20.0,
+                        color: Color.fromARGB(255, 176, 255, 217),
+                        fontWeight: FontWeight.bold),
+                  )
+                ],
+              ),
+            ),
+            ProgressCard(),
+            ProgressCard(),
+            ProgressCard()
           ],
         ),
       )),
-        floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        child: Text('X'),
-        backgroundColor: Colors.indigo.shade50,
-      ),
-    );
-  }
-}
-
-class ProfileAvatar extends StatelessWidget {
-  final String name;
-  final String picpath;
-  final double progress;
-  final Color barcolor;
-
-  ProfileAvatar(
-      {super.key,
-      this.name = "Your progress",
-      this.picpath = "assets/nahida.jpg",
-      this.progress = 0.0,
-      this.barcolor = const Color.fromARGB(255, 176, 255, 217)});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      // ignore: prefer_const_literals_to_create_immutables
-      children: [
-        Stack(alignment: AlignmentDirectional.center, children: [
-          CircleAvatar(
-            backgroundImage: AssetImage(picpath),
-            radius: 38.0,
-          ),
-          CircularPercentIndicator(
-            backgroundColor: Color.fromARGB(255, 22, 25, 25),
-            progressColor: barcolor,
-            percent: progress,
-            radius: 40.0,
-            // animateFromLastPercent: true,
-            animation: true,
-            animationDuration: 1000,
-          )
-        ]),
-        SizedBox(height: 5.0),
-        Text(
-          name,
-          style: TextStyle(color: Color.fromARGB(255, 255, 255, 255)),
-        )
-      ],
     );
   }
 }
