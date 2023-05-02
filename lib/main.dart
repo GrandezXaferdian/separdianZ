@@ -64,7 +64,7 @@ class _HomeState extends State<Home> {
               onPressed: () {
                 ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                     content:
-                        Text('Settings is currently under construction!')));
+                        Text('Hello there!!')));
               },
             ),
             IconButton(
