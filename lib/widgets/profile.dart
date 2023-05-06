@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:percent_indicator/percent_indicator.dart';
+import 'package:separdianz/preferences.dart';
 
 class ProfileAvatar extends StatefulWidget {
   final String name;
@@ -24,13 +25,12 @@ class _ProfileAvatarState extends State<ProfileAvatar> {
   @override
   Widget build(BuildContext context) {
     return Column(
-      // ignore: prefer_const_literals_to_create_immutables
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 5.0),
           child: Stack(alignment: AlignmentDirectional.center, children: [
             CircularPercentIndicator(
-              backgroundColor: Color.fromARGB(255, 22, 25, 25),
+              backgroundColor: progress_bg,
               progressColor: widget.barcolor,
               percent: widget.progress,
               lineWidth: 3.0,
@@ -40,7 +40,8 @@ class _ProfileAvatarState extends State<ProfileAvatar> {
               animationDuration: 1000,
             ),
             GestureDetector(
-              onTap: () { //Write page nagivation function
+              onTap: () {
+                //Write page nagivation function
                 ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('Navigate to ${widget.name}')));
               },

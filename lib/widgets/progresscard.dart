@@ -2,15 +2,52 @@
 
 import 'package:flutter/material.dart';
 import 'package:percent_indicator/percent_indicator.dart';
+import 'package:separdianz/preferences.dart';
 import 'package:separdianz/taskpage.dart';
 
-class ProgressCard extends StatelessWidget {
+class ProgressCard extends StatefulWidget {
   const ProgressCard(
-      {super.key, this.task = "Task", this.completed = 0, this.outof = 1});
+      {super.key,
+      this.task = "Task",
+      this.completed = 0,
+      this.outof = 1,
+      required this.remove});
   final String task;
   final int completed;
   final int outof;
+  final Function() remove;
 
+  @override
+  State<ProgressCard> createState() =>
+      _ProgressCardState(completed: completed, outof: outof);
+}
+
+class _ProgressCardState extends State<ProgressCard> {
+  int completed;
+  int outof;
+  Color prim = primary;
+
+  void increment_task() {
+    setState(() {
+      completed++;
+      if (completed == outof) {
+        prim = otherAvatar;
+      }
+    });
+    print('$completed/$outof');
+  }
+
+  void decrement_task() {
+    setState(() {
+      if (completed == outof) {
+        prim = primary;
+      }
+      completed--;
+    });
+    print('$completed/$outof');
+  }
+
+  _ProgressCardState({this.completed = 0, this.outof = 1});
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -26,11 +63,8 @@ class ProgressCard extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    task,
-                    style: TextStyle(
-                        fontSize: 18.0,
-                        color: Color.fromARGB(255, 206, 206, 206),
-                        fontWeight: FontWeight.bold),
+                    widget.task,
+                    style: title_secondary_light,
                   ),
                   Text(
                     '${completed.toString()}/${outof.toString()}',
@@ -48,7 +82,7 @@ class ProgressCard extends StatelessWidget {
             LinearProgressIndicator(
               value: completed / outof,
               backgroundColor: Color.fromARGB(255, 22, 25, 25),
-              color: Color.fromARGB(255, 176, 255, 217),
+              color: prim,
               minHeight: 8.0,
             ),
             Row(
@@ -58,19 +92,30 @@ class ProgressCard extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(vertical: 8.0),
                   child: ElevatedButton.icon(
                       style: ButtonStyle(
-                          backgroundColor: MaterialStatePropertyAll<Color>(
-                              Color.fromARGB(255, 176, 255, 217)),
+                          backgroundColor:
+                              MaterialStatePropertyAll<Color>(prim),
                           foregroundColor: MaterialStatePropertyAll<Color>(
                               Color.fromARGB(255, 0, 0, 0))),
                       onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => TaskPage(task: task)),
-                        );
+                        (completed == outof)
+                            ? widget.remove()
+                            //super.dispose();
+
+                            : Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => TaskPage(
+                                        task: widget.task,
+                                        completed: completed,
+                                        parentinc: increment_task,
+                                        parentdec: decrement_task,
+                                        outof: outof)),
+                              );
                       },
                       icon: Icon(Icons.task_alt_sharp),
-                      label: Text('Continue Task!')),
+                      label: (completed == outof)
+                          ? Text('Finish Task!')
+                          : Text('Continue Task!')),
                 ),
               ],
             )
