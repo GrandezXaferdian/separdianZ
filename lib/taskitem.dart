@@ -30,6 +30,7 @@ class _TaskItemState extends State<TaskItem> {
   @override
   Widget build(BuildContext context) {
     return ProgressCard(
+        key: ObjectKey(widget.taskname),
         task: widget.taskname,
         outof: widget.outof,
         completed: widget.completed,
