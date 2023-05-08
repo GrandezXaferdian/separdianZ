@@ -5,8 +5,13 @@ class Task {
   final String name;
   final int completed;
   final int outof;
+  final int cycleDuration;
 
-  Task({required this.name, required this.completed, required this.outof});
+  Task(
+      {required this.name,
+      required this.completed,
+      required this.outof,
+      required this.cycleDuration});
 }
 
 class TaskItem extends StatefulWidget {
@@ -15,11 +20,13 @@ class TaskItem extends StatefulWidget {
       this.taskname = "Task",
       this.completed = 0,
       this.outof = 1,
-      required this.onremove});
+      required this.onremove,
+      this.cycleDuration = 15});
 
   final String taskname;
   final int completed;
   final int outof;
+  final int cycleDuration;
   final Function() onremove;
 
   @override
@@ -34,6 +41,7 @@ class _TaskItemState extends State<TaskItem> {
         task: widget.taskname,
         outof: widget.outof,
         completed: widget.completed,
+        cycleDuration: widget.cycleDuration,
         remove: widget.onremove);
   }
 }
@@ -47,10 +55,21 @@ class TaskList extends StatefulWidget {
 
 class _TaskListState extends State<TaskList> {
   List<Task> tasks = [
-    Task(name: "Machine Learning", completed: 3, outof: 4),
-    Task(name: "Academics", completed: 3, outof: 7),
-    Task(name: "Flutter App Development", completed: 7, outof: 8),
+    Task(name: "Machine Learning", completed: 3, outof: 4, cycleDuration: 5),
+    Task(name: "Academics", completed: 3, outof: 7, cycleDuration: 15),
+    Task(
+        name: "Flutter App Development",
+        completed: 7,
+        outof: 8,
+        cycleDuration: 10),
   ];
+
+  void add_task(String name, int cycles, int duration) {
+    setState(() {
+      tasks.add(Task(
+          name: name, completed: 0, outof: cycles, cycleDuration: duration));
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -60,6 +79,7 @@ class _TaskListState extends State<TaskList> {
             taskname: task.name,
             completed: task.completed,
             outof: task.outof,
+            cycleDuration: task.cycleDuration,
             onremove: () {
               setState(() {
                 tasks.remove(task);

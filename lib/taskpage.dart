@@ -13,28 +13,39 @@ class TaskPage extends StatefulWidget {
       this.parentinc,
       this.parentdec,
       this.completed = 0,
-      this.outof = 1});
+      this.outof = 1,
+      this.cycleDuration});
   final int outof;
   final int completed;
   final String task;
   final Function()? parentinc;
   final Function()? parentdec;
+  final cycleDuration;
   @override
   State<TaskPage> createState() => _TaskPageState(
       parentinc: parentinc,
       taskcompleted: completed,
       taskoutof: outof,
-      parentdec: parentdec);
+      parentdec: parentdec,
+      cycleDuration: cycleDuration);
 }
 
 class _TaskPageState extends State<TaskPage> {
   int taskcompleted;
   int taskoutof;
+  int cycleDuration;
+  Duration totalseconds = Duration(seconds: 15);
+  Duration remainingseconds = Duration(seconds: 15);
+
   _TaskPageState(
       {this.parentinc,
       this.taskcompleted = 0,
       this.taskoutof = 1,
-      this.parentdec});
+      this.parentdec,
+      this.cycleDuration = 15}) {
+    totalseconds = Duration(seconds: cycleDuration);
+    remainingseconds = Duration(seconds: cycleDuration);
+  }
   Function()? parentdec;
   Function()? parentinc;
   Color prim = primary;
@@ -42,8 +53,7 @@ class _TaskPageState extends State<TaskPage> {
   bool taskallcomplete = false;
   Timer? timerfunc;
   String time = "17:08";
-  Duration totalseconds = Duration(seconds: 10);
-  Duration remainingseconds = Duration(seconds: 10);
+
   double progress = 0;
   bool running = false;
   bool over = false;

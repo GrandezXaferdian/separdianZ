@@ -11,20 +11,23 @@ class ProgressCard extends StatefulWidget {
       this.task = "Task",
       this.completed = 0,
       this.outof = 1,
-      required this.remove});
+      required this.remove,
+      this.cycleDuration});
   final String task;
   final int completed;
   final int outof;
   final Function() remove;
+  final cycleDuration;
 
   @override
-  State<ProgressCard> createState() =>
-      _ProgressCardState(completed: completed, outof: outof);
+  State<ProgressCard> createState() => _ProgressCardState(
+      completed: completed, outof: outof, cycleDuration: cycleDuration);
 }
 
 class _ProgressCardState extends State<ProgressCard> {
   int completed;
   int outof;
+  int cycleDuration;
   Color prim = primary;
 
   void increment_task() {
@@ -47,7 +50,7 @@ class _ProgressCardState extends State<ProgressCard> {
     print('$completed/$outof');
   }
 
-  _ProgressCardState({this.completed = 0, this.outof = 1});
+  _ProgressCardState({this.completed = 0, this.outof = 1, this.cycleDuration = 10});
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -109,7 +112,8 @@ class _ProgressCardState extends State<ProgressCard> {
                                         completed: completed,
                                         parentinc: increment_task,
                                         parentdec: decrement_task,
-                                        outof: outof)),
+                                        outof: outof,
+                                        cycleDuration: cycleDuration)),
                               );
                       },
                       icon: Icon(Icons.task_alt_sharp),
