@@ -9,7 +9,6 @@ import 'package:flutter/material.dart'; //Material UI
 import 'package:percent_indicator/percent_indicator.dart'; //3rd party progress bar
 import 'package:fl_chart/fl_chart.dart'; //3rd party graphing widget
 
-
 //Packages segmented internally. Each file holds a definition of widget.
 import 'package:separdianz/widgets/graph.dart'; //Line graph
 import 'package:separdianz/widgets/profile.dart'; //The widget that appears on the top row
@@ -19,17 +18,39 @@ import 'package:separdianz/taskitem.dart';
 import 'package:separdianz/preferences.dart';
 
 //The main function which triggers the 'runApp' function that starts the app
-void main() => runApp(MaterialApp(
+void main() => runApp(MainApp());
+
+class MainApp extends StatelessWidget {
+  const MainApp({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
       //Material App Instantiation
+
       home:
           Home(), //Home is the first page to appear. Its definition is given later on in the code
       theme: ThemeData(
           //This class instantiation sets the overall font of the application and few other preferences, such as style of every text button.
+          inputDecorationTheme: InputDecorationTheme(
+              hintStyle: TextStyle(color: text),
+              labelStyle: TextStyle(color: text),
+              //activeIndicatorBorder: BorderSide(color: primary, width: 1.0),
+              enabledBorder:
+                  OutlineInputBorder(borderSide: BorderSide(color: primary)),
+              focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: otherAvatar)),
+              border: OutlineInputBorder(
+                  borderSide: BorderSide(color: primary, width: 3.0))),
           fontFamily: 'Default',
           textButtonTheme: TextButtonThemeData(
               style: TextButton.styleFrom(
                   foregroundColor: Color.fromARGB(255, 187, 255, 252)))),
-    ));
+    );
+  }
+}
 
 //Home page stateful widget definition. I do not get how these classes work as of yet, but please take them for granted for now, or refer to the flutter documentation for more information.
 
@@ -55,7 +76,6 @@ class _HomeState extends State<Home> {
     ["Albedo", "assets/albedo.jpg", 0.96, otherAvatar],
     ["Dainsleif", "assets/dainsleif.png", 0.66, otherAvatar],
   ];
-
 
   //The build method of a stateless widget is the one that 'builds' the widget when the app is created and the widget is created.
   @override
@@ -129,43 +149,12 @@ class _HomeState extends State<Home> {
               indent: 15.0,
             ),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 18.0),
-              child: ProgressTitle(),
-            ),
-            Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 10.0, vertical: 8.0),
-              child: TaskList()
-            )
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10.0, vertical: 8.0),
+                child: TaskList())
           ],
         ),
       ),
-    );
-  }
-}
-
-class ProgressTitle extends StatelessWidget {
-  const ProgressTitle({super.key, this.total = 0});
-  final int total;
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      // ignore: prefer_const_literals_to_create_immutables
-      children: [
-        Text(
-          '77% Progress!',
-          style: TextStyle(
-              fontSize: 20.0, color: primary, fontWeight: FontWeight.bold),
-        ),
-        Text(
-          '4/7',
-          style: TextStyle(
-              fontSize: 20.0,
-              color: Color.fromARGB(255, 176, 255, 217),
-              fontWeight: FontWeight.bold),
-        )
-      ],
     );
   }
 }
