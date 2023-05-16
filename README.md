@@ -18,14 +18,15 @@ Added new features:
 3) Tasks can be added and deleted whenever the user wishes
 4) An internal map is created to store the progress of everyday. This can be later used in the graph widget to plot everyday efficiency trened
 
-
-## To do
+## In next version (v.0.2.1)
 
 Graph widget work
 1) Make it load progress points belonging to that particular week and display it on the widget.
 
 Flutter task list work
 1) Make the timer run in background and give a notification when time is complete
+
+## To do
 
 Enhancements
 1) Make the progress percent reflect the tasks completed duration than the number of cycles
