@@ -260,7 +260,7 @@ class ProgressTitle extends StatelessWidget {
   ProgressTitle({super.key, required this.tasklist, required this.complist}) {
     int dc = 0;
     int dof = 0;
-    tasklist!.forEach((element) {
+    tasklist.forEach((element) {
       dc += element.completed;
       dof += element.outof;
     });
