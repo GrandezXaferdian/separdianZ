@@ -1,7 +1,12 @@
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:separdianz/createtaskpage.dart';
 import 'package:separdianz/preferences.dart';
+import 'package:separdianz/userdata.dart';
 import 'package:separdianz/widgets/progresscard.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 
 class Task {
   String name;
@@ -25,7 +30,8 @@ class TaskItem extends StatefulWidget {
       required this.onremove,
       this.cycleDuration = 15,
       required this.inctask,
-      required this.dectask});
+      required this.dectask,
+      required this.delete});
 
   final String taskname;
   final int completed;
@@ -34,6 +40,7 @@ class TaskItem extends StatefulWidget {
   final Function() onremove;
   final Function() inctask;
   final Function() dectask;
+  final Function() delete;
 
   @override
   State<TaskItem> createState() => _TaskItemState();
@@ -43,44 +50,124 @@ class _TaskItemState extends State<TaskItem> {
   @override
   Widget build(BuildContext context) {
     return ProgressCard(
-        key: ObjectKey(widget.taskname),
-        task: widget.taskname,
-        outof: widget.outof,
-        completed: widget.completed,
-        cycleDuration: widget.cycleDuration,
-        remove: widget.onremove,
-        inctask: widget.inctask,
-        dectask: widget.dectask);
+      key: ObjectKey(widget.taskname),
+      task: widget.taskname,
+      outof: widget.outof,
+      completed: widget.completed,
+      cycleDuration: widget.cycleDuration,
+      remove: widget.onremove,
+      inctask: widget.inctask,
+      dectask: widget.dectask,
+      delete: widget.delete,
+    );
   }
 }
 
-class TaskList extends StatefulWidget {
-  const TaskList({super.key});
+List<Task> convertToTask(List<List> tasks) {
+  List<Task> converted = [];
 
-  @override
-  State<TaskList> createState() => _TaskListState();
+  for (var element in tasks) {
+    converted.add(Task(
+        name: element[0],
+        completed: element[1],
+        outof: element[2],
+        cycleDuration: element[3]));
+  }
+  return converted;
 }
 
-class _TaskListState extends State<TaskList> {
-  List<Task> tasks = [
-    Task(name: "Machine Learning", completed: 3, outof: 4, cycleDuration: 5),
-    Task(name: "Academics", completed: 3, outof: 7, cycleDuration: 15),
-    Task(
-        name: "Flutter App Development",
-        completed: 7,
-        outof: 8,
-        cycleDuration: 10),
-  ];
+List<List> convertToList(List<Task> tasks) {
+  List<List> converted = [];
 
-  List<Task> completedtasks = [
-    Task(name: 'Solving crisis', completed: 1, outof: 1, cycleDuration: 3650)
-  ];
+  for (var element in tasks) {
+    converted.add([
+      element.name,
+      element.completed,
+      element.outof,
+      element.cycleDuration
+    ]);
+  }
+  return converted;
+}
+
+class TaskList extends StatefulWidget {
+  TaskList({super.key, required this.data}) {
+    contask = convertToTask(data.currentTasks);
+    concompletedtask = convertToTask(data.completedTasks);
+    conoutdatedtask = convertToTask(data.outdatedTasks);
+  }
+  UserData data;
+  late List<Task> contask;
+  late List<Task> concompletedtask;
+  late List<Task> conoutdatedtask;
+  @override
+  State<TaskList> createState() => _TaskListState(
+      tasks: contask,
+      completedtasks: concompletedtask,
+      outdatedtasks: conoutdatedtask);
+}
+
+class _TaskListState extends State<TaskList> with WidgetsBindingObserver {
+  _TaskListState(
+      {required this.tasks,
+      required this.completedtasks,
+      required this.outdatedtasks});
+  List<Task> tasks;
+
+  List<Task> completedtasks;
+
+  List<Task> outdatedtasks;
 
   add_task(String name, int cycles, int duration) {
     setState(() {
       tasks.add(Task(
           name: name, completed: 0, outof: cycles, cycleDuration: duration));
     });
+  }
+
+  int calculateProgress() {
+    int dc = 0;
+    int dof = 0;
+    for (var element in tasks) {
+      dc += element.completed;
+      dof += element.outof;
+    }
+
+    for (var element in completedtasks) {
+      dc += element.completed;
+      dof += element.outof;
+    }
+
+    int progress = (100 * (dc / dof)).ceil();
+
+    return progress;
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    if (state == AppLifecycleState.detached) {
+      print('Attempting to save!');
+      widget.data.currentTasks = convertToList(tasks);
+      widget.data.completedTasks = convertToList(completedtasks);
+      widget.data.outdatedTasks = convertToList(outdatedtasks);
+      widget.data.currentProgress = calculateProgress();
+      widget.data.lastUpdated = DateTime.now().toString();
+      Box box = Hive.box(boxName);
+      box.put(dataName, widget.data);
+    }
+  }
+
+  @override
+  void initState() {
+    WidgetsBinding.instance.addObserver(this);
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    WidgetsBinding.instance.removeObserver(this);
   }
 
   @override
@@ -93,7 +180,14 @@ class _TaskListState extends State<TaskList> {
         ),
         Column(
           children: completedtasks.map((task) {
-            return CompletedTask(taskobj: task);
+            return CompletedTask(
+                key: ObjectKey(task.name),
+                taskobj: task,
+                removefunc: () {
+                  setState(() {
+                    completedtasks.remove(task);
+                  });
+                });
           }).toList(),
         ),
         ((completedtasks.isNotEmpty)
@@ -106,29 +200,53 @@ class _TaskListState extends State<TaskList> {
         Column(
           children: tasks.map((task) {
             return TaskItem(
-                taskname: task.name,
-                completed: task.completed,
-                outof: task.outof,
-                cycleDuration: task.cycleDuration,
-                onremove: () {
-                  setState(() {
-                    completedtasks.add(task);
-                    tasks.remove(task);
-                  });
-                },
-                inctask: () {
-                  setState(() {
-                    task.completed++;
-                  });
-                },
-                dectask: () {
-                  setState(() {
-                    task.completed--;
-                  });
+              taskname: task.name,
+              completed: task.completed,
+              outof: task.outof,
+              cycleDuration: task.cycleDuration,
+              onremove: () {
+                setState(() {
+                  completedtasks.add(task);
+                  tasks.remove(task);
                 });
+              },
+              inctask: () {
+                setState(() {
+                  task.completed++;
+                });
+              },
+              dectask: () {
+                setState(() {
+                  task.completed--;
+                });
+              },
+              delete: () {
+                setState(() {
+                  tasks.remove(task);
+                });
+              },
+            );
           }).toList(),
         ),
         AddTask(addfunc: add_task),
+        Column(
+          children: outdatedtasks.map((e) {
+            return OutdatedTask(
+                taskobj: e,
+                removefunc: () {
+                  setState(() {
+                    outdatedtasks.remove(e);
+                  });
+                },
+                restorefunc: () {
+                  setState(() {
+                    tasks.add(e);
+                    outdatedtasks.remove(e);
+                  });
+                });
+          }).toList(),
+        )
+        //SaveTask(save: save)
       ],
     );
   }
@@ -154,7 +272,7 @@ class ProgressTitle extends StatelessWidget {
 
     completed = dc;
     outof = dof;
-    progress = (100 * (completed / outof)).ceil();
+    progress = (outof != 0) ? (100 * (completed / outof)).ceil() : 0;
   }
   final List<Task> tasklist;
   final List<Task> complist;
@@ -182,7 +300,7 @@ class ProgressTitle extends StatelessWidget {
             ],
           )
         : Text(
-            'All tasks completed! Otsukarasamadesu！',
+            'All tasks completed! Otsukarasamadesu~',
             style: TextStyle(
                 fontSize: 16.0, color: primary, fontWeight: FontWeight.bold),
           );
@@ -190,29 +308,112 @@ class ProgressTitle extends StatelessWidget {
 }
 
 class CompletedTask extends StatelessWidget {
-  CompletedTask({super.key, required this.taskobj}) {
+  CompletedTask({super.key, required this.taskobj, required this.removefunc}) {
     int total = taskobj.cycleDuration * taskobj.outof;
     time = Duration(seconds: total);
     timestring = convertTimeToString(total);
   }
+  final removefunc;
   final Task taskobj;
   late Duration time;
   late String timestring;
   @override
   Widget build(BuildContext context) {
-    return Card(
-      color: card_bg,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 10.0),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(taskobj.name, style: title_tertiary),
-            Text(
-              '${timestring}spent',
-              style: title_secondary_light,
-            )
-          ],
+    return Slidable(
+      key: UniqueKey(),
+      endActionPane: ActionPane(
+          dismissible:
+              DismissiblePane(key: UniqueKey(), onDismissed: removefunc),
+          motion: ScrollMotion(),
+          children: <Widget>[
+            SlidableAction(
+                onPressed: (context) {
+                  removefunc();
+                },
+                backgroundColor: error,
+                foregroundColor: Colors.black,
+                icon: Icons.delete,
+                label: 'Delete')
+          ]),
+      child: Card(
+        color: card_bg,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 10.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(taskobj.name, style: title_tertiary),
+              Text(
+                '${timestring}spent',
+                style: title_secondary_light,
+              )
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class OutdatedTask extends StatelessWidget {
+  OutdatedTask(
+      {super.key,
+      required this.taskobj,
+      required this.removefunc,
+      required this.restorefunc}) {
+    int total = taskobj.cycleDuration * taskobj.completed;
+    time = Duration(seconds: total);
+    timestring = convertTimeToString(total);
+  }
+  final restorefunc;
+  final removefunc;
+  final Task taskobj;
+  late Duration time;
+  late String timestring;
+  @override
+  Widget build(BuildContext context) {
+    return Slidable(
+      key: UniqueKey(),
+      startActionPane: ActionPane(
+          dismissible:
+              DismissiblePane(key: UniqueKey(), onDismissed: restorefunc),
+          motion: ScrollMotion(),
+          children: <Widget>[
+            SlidableAction(
+                onPressed: (context) {
+                  restorefunc();
+                },
+                backgroundColor: otherAvatar,
+                foregroundColor: Colors.black,
+                icon: Icons.restore,
+                label: 'Restore')
+          ]),
+      endActionPane: ActionPane(
+          dismissible:
+              DismissiblePane(key: UniqueKey(), onDismissed: removefunc),
+          motion: ScrollMotion(),
+          children: <Widget>[
+            SlidableAction(
+                onPressed: (context) {},
+                backgroundColor: error,
+                foregroundColor: Colors.black,
+                icon: Icons.delete,
+                label: 'Delete Permanently')
+          ]),
+      child: Card(
+        color: card_bg,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 10.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(taskobj.name, style: title_error),
+              Text(
+                '${taskobj.completed}/${taskobj.outof}',
+                style: title_secondary_light,
+              )
+            ],
+          ),
         ),
       ),
     );
@@ -231,11 +432,31 @@ class AddTask extends StatelessWidget {
               side: BorderSide(color: primary, width: 2.0),
               foregroundColor: primary),
           onPressed: () {
-            Navigator.push(context,
-                MaterialPageRoute(builder: (context) => CreateTaskPage(addfunc: addfunc)));
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => CreateTaskPage(addfunc: addfunc)));
           },
           icon: Icon(Icons.add),
           label: Text('Create New Task!')),
     );
   }
 }
+
+/*class SaveTask extends StatelessWidget {
+  const SaveTask({super.key, required this.save});
+  final Function() save;
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: OutlinedButton.icon(
+          style: OutlinedButton.styleFrom(
+              side: BorderSide(color: primary, width: 2.0),
+              foregroundColor: primary),
+          onPressed: save,
+          icon: Icon(Icons.add),
+          label: Text('SAVE')),
+    );
+  }
+}*/

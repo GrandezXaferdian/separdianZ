@@ -6,8 +6,10 @@ import 'dart:math';
 
 //Packages to import from external sources.
 import 'package:flutter/material.dart'; //Material UI
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:percent_indicator/percent_indicator.dart'; //3rd party progress bar
 import 'package:fl_chart/fl_chart.dart'; //3rd party graphing widget
+import 'package:separdianz/userdata.dart';
 
 //Packages segmented internally. Each file holds a definition of widget.
 import 'package:separdianz/widgets/graph.dart'; //Line graph
@@ -18,7 +20,34 @@ import 'package:separdianz/taskitem.dart';
 import 'package:separdianz/preferences.dart';
 
 //The main function which triggers the 'runApp' function that starts the app
-void main() => runApp(MainApp());
+
+late Box box;
+Future<void> main() async {
+  await Hive.initFlutter();
+  Hive.registerAdapter(UserDataAdapter());
+
+  box = await Hive.openBox(boxName);
+
+  checkUpdate(boxName);
+
+  /*box.put(
+    dataName,
+    UserData(
+        name: 'Grandez Xaferdian',
+        currentTasks: [
+          ['Test', 2, 3, 45]
+        ],
+        completedTasks: [
+          ['Tsst', 3, 3, 45]
+        ],
+        outdatedTasks: [['Tgh', 0, 3, 45],['Tghdd', 0, 3, 45]],
+        progress: {'14-05-2023': 56},
+        lastUpdated: DateTime.now().toString(),
+        currentProgress: 0),
+  );*/
+
+  runApp(MainApp());
+}
 
 class MainApp extends StatelessWidget {
   const MainApp({
@@ -80,6 +109,7 @@ class _HomeState extends State<Home> {
   //The build method of a stateless widget is the one that 'builds' the widget when the app is created and the widget is created.
   @override
   Widget build(BuildContext context) {
+    UserData data = box.get(dataName);
     return Scaffold(
       //Every page should return a Scaffold. The Scaffold is the superior ancestor to every widget in a page. Its attributes are self explanatory
 
@@ -100,7 +130,7 @@ class _HomeState extends State<Home> {
               tooltip: 'Settings',
               onPressed: () {
                 ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Hello there!!')));
+                    SnackBar(content: Text('${data.name} is your username!')));
               },
             ),
             IconButton(
@@ -151,7 +181,9 @@ class _HomeState extends State<Home> {
             Padding(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 10.0, vertical: 8.0),
-                child: TaskList())
+                child: TaskList(
+                  data: data,
+                ))
           ],
         ),
       ),
