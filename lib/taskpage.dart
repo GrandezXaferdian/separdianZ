@@ -8,19 +8,24 @@ import 'package:separdianz/preferences.dart';
 import 'package:separdianz/widgets/progresscard.dart';
 
 class TaskPage extends StatefulWidget {
-  const TaskPage(
-      {super.key,
-      this.task = "Task",
-      this.parentinc,
-      this.parentdec,
-      this.completed = 0,
-      this.outof = 1,
-      this.cycleDuration});
+  const TaskPage({
+    super.key,
+    this.task = "Task",
+    this.parentinc,
+    this.parentdec,
+    this.completed = 0,
+    this.outof = 1,
+    this.cycleDuration,
+    this.elapsedUpdate,
+    this.elapsed = 0,
+  });
   final int outof;
   final int completed;
+  final int elapsed;
   final String task;
   final Function()? parentinc;
   final Function()? parentdec;
+  final Function(int)? elapsedUpdate;
   final cycleDuration;
   @override
   State<TaskPage> createState() => _TaskPageState(
@@ -28,30 +33,37 @@ class TaskPage extends StatefulWidget {
       taskcompleted: completed,
       taskoutof: outof,
       parentdec: parentdec,
-      cycleDuration: cycleDuration);
+      cycleDuration: cycleDuration,
+      elapsedUpdate: elapsedUpdate,
+      elapsed: elapsed);
 }
 
 class _TaskPageState extends State<TaskPage> {
   int taskcompleted;
   int taskoutof;
   int cycleDuration;
+  int elapsed;
   Duration totalseconds = Duration(seconds: 15);
   Duration remainingseconds = Duration(seconds: 15);
 
-  _TaskPageState(
-      {this.parentinc,
-      this.taskcompleted = 0,
-      this.taskoutof = 1,
-      this.parentdec,
-      this.cycleDuration = 15}) {
+  _TaskPageState({
+    this.parentinc,
+    this.taskcompleted = 0,
+    this.taskoutof = 1,
+    this.parentdec,
+    this.cycleDuration = 15,
+    this.elapsedUpdate,
+    this.elapsed = 0,
+  }) {
     totalseconds = Duration(seconds: cycleDuration);
-    remainingseconds = Duration(seconds: cycleDuration);
+    remainingseconds = Duration(seconds: cycleDuration - elapsed);
   }
 
   final player = AudioPlayer();
 
   Function()? parentdec;
   Function()? parentinc;
+  Function(int)? elapsedUpdate;
   Color prim = primary;
 
   bool taskallcomplete = false;
@@ -164,6 +176,7 @@ class _TaskPageState extends State<TaskPage> {
           leading: IconButton(
               onPressed: () {
                 //Do not pop the page. Just send it to the background
+                elapsedUpdate!(totalseconds.inSeconds - remainingseconds.inSeconds);
                 Navigator.pop(context);
               },
               icon: const Icon(Icons.arrow_back_outlined)),

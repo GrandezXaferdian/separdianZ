@@ -17,6 +17,9 @@ Color error = Color.fromARGB(255, 255, 101, 101);
 TextStyle title_secondary_light =
     TextStyle(fontSize: 18.0, color: text, fontWeight: FontWeight.bold);
 
+TextStyle microtitle_secondary_light =
+    TextStyle(fontSize: 18.0, color: text, fontWeight: FontWeight.bold);
+
 TextStyle bigtitle_secondary_light =
     TextStyle(fontSize: 60.0, color: text, fontWeight: FontWeight.bold);
 

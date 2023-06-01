@@ -13,12 +13,14 @@ class Task {
   int completed;
   int outof;
   int cycleDuration;
+  int elapsed;
 
   Task(
       {required this.name,
       required this.completed,
       required this.outof,
-      required this.cycleDuration});
+      required this.cycleDuration,
+      this.elapsed = 5});
 }
 
 class TaskItem extends StatefulWidget {
@@ -29,10 +31,12 @@ class TaskItem extends StatefulWidget {
       this.outof = 1,
       required this.onremove,
       this.cycleDuration = 15,
+      required this.elapsed,
       required this.inctask,
       required this.dectask,
-      required this.delete});
-
+      required this.delete,
+      required this.elapsedUpdate});
+  final int elapsed;
   final String taskname;
   final int completed;
   final int outof;
@@ -41,6 +45,7 @@ class TaskItem extends StatefulWidget {
   final Function() inctask;
   final Function() dectask;
   final Function() delete;
+  final Function(int) elapsedUpdate;
 
   @override
   State<TaskItem> createState() => _TaskItemState();
@@ -55,10 +60,12 @@ class _TaskItemState extends State<TaskItem> {
       outof: widget.outof,
       completed: widget.completed,
       cycleDuration: widget.cycleDuration,
+      elapsed: widget.elapsed,
       remove: widget.onremove,
       inctask: widget.inctask,
       dectask: widget.dectask,
       delete: widget.delete,
+      elapsedUpdate: widget.elapsedUpdate,
     );
   }
 }
@@ -71,7 +78,8 @@ List<Task> convertToTask(List<List> tasks) {
         name: element[0],
         completed: element[1],
         outof: element[2],
-        cycleDuration: element[3]));
+        cycleDuration: element[3],
+        elapsed: element[4]));
   }
   return converted;
 }
@@ -84,7 +92,8 @@ List<List> convertToList(List<Task> tasks) {
       element.name,
       element.completed,
       element.outof,
-      element.cycleDuration
+      element.cycleDuration,
+      element.elapsed,
     ]);
   }
   return converted;
@@ -200,32 +209,37 @@ class _TaskListState extends State<TaskList> with WidgetsBindingObserver {
         Column(
           children: tasks.map((task) {
             return TaskItem(
-              taskname: task.name,
-              completed: task.completed,
-              outof: task.outof,
-              cycleDuration: task.cycleDuration,
-              onremove: () {
-                setState(() {
-                  completedtasks.add(task);
-                  tasks.remove(task);
+                taskname: task.name,
+                completed: task.completed,
+                outof: task.outof,
+                cycleDuration: task.cycleDuration,
+                elapsed: task.elapsed,
+                onremove: () {
+                  setState(() {
+                    completedtasks.add(task);
+                    tasks.remove(task);
+                  });
+                },
+                inctask: () {
+                  setState(() {
+                    task.completed++;
+                  });
+                },
+                dectask: () {
+                  setState(() {
+                    task.completed--;
+                  });
+                },
+                delete: () {
+                  setState(() {
+                    tasks.remove(task);
+                  });
+                },
+                elapsedUpdate: (int elapsed) {
+                  setState(() {
+                    task.elapsed = elapsed;
+                  });
                 });
-              },
-              inctask: () {
-                setState(() {
-                  task.completed++;
-                });
-              },
-              dectask: () {
-                setState(() {
-                  task.completed--;
-                });
-              },
-              delete: () {
-                setState(() {
-                  tasks.remove(task);
-                });
-              },
-            );
           }).toList(),
         ),
         AddTask(addfunc: add_task),

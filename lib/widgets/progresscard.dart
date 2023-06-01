@@ -7,34 +7,43 @@ import 'package:separdianz/taskpage.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 
 class ProgressCard extends StatefulWidget {
-  const ProgressCard(
-      {super.key,
-      this.task = "Task",
-      this.completed = 0,
-      this.outof = 1,
-      required this.remove,
-      this.cycleDuration,
-      required this.inctask,
-      required this.dectask,
-      required this.delete});
+  const ProgressCard({
+    super.key,
+    this.task = "Task",
+    this.completed = 0,
+    this.outof = 1,
+    required this.remove,
+    required this.cycleDuration,
+    required this.elapsed,
+    required this.inctask,
+    required this.dectask,
+    required this.delete,
+    required this.elapsedUpdate,
+  });
   final String task;
   final int completed;
   final int outof;
   final Function() remove;
   final Function() delete;
   final cycleDuration;
+  final int elapsed;
   final Function() inctask;
   final Function() dectask;
+  final Function(int) elapsedUpdate;
 
   @override
   State<ProgressCard> createState() => _ProgressCardState(
-      completed: completed, outof: outof, cycleDuration: cycleDuration);
+      completed: completed,
+      outof: outof,
+      cycleDuration: cycleDuration,
+      elapsed: elapsed);
 }
 
 class _ProgressCardState extends State<ProgressCard> {
   int completed;
   int outof;
   int cycleDuration;
+  int elapsed;
   Color prim = primary;
 
   void increment_task() {
@@ -59,8 +68,19 @@ class _ProgressCardState extends State<ProgressCard> {
     print('$completed/$outof');
   }
 
+  void elapsedTimeUpdate(int elapsed) {
+    widget.elapsedUpdate(elapsed);
+    setState(() {
+      this.elapsed = elapsed;
+    });
+    print('$elapsed seconds updated in progress card');
+  }
+
   _ProgressCardState(
-      {this.completed = 0, this.outof = 1, this.cycleDuration = 10});
+      {this.completed = 0,
+      this.outof = 1,
+      this.cycleDuration = 10,
+      this.elapsed = 0});
   @override
   Widget build(BuildContext context) {
     return Slidable(
@@ -115,8 +135,16 @@ class _ProgressCardState extends State<ProgressCard> {
                 minHeight: 8.0,
               ),
               Row(
-                mainAxisAlignment: MainAxisAlignment.end,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
+                  Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8.0),
+                      child: (elapsed != 0)
+                          ? Text(
+                              '${convertTimeToString(cycleDuration - elapsed)}to go!',
+                              style: microtitle_secondary_light,
+                            )
+                          : Container()),
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8.0),
                     child: ElevatedButton.icon(
@@ -139,7 +167,9 @@ class _ProgressCardState extends State<ProgressCard> {
                                           parentinc: increment_task,
                                           parentdec: decrement_task,
                                           outof: outof,
-                                          cycleDuration: cycleDuration)),
+                                          cycleDuration: cycleDuration,
+                                          elapsed: elapsed,
+                                          elapsedUpdate: elapsedTimeUpdate)),
                                 );
                         },
                         icon: Icon(Icons.task_alt_sharp),
