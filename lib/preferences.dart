@@ -82,9 +82,24 @@ void checkUpdate(String boxName) {
     print('After Modification:');
     print(data.currentTasks);
     print(data.currentProgress);
-
+    print('Progress Map:');
+    print(data.progress);
     box.put(dataName, data);
   } else {
     print('Day has not lapsed. Tasks are retained as is');
   }
+}
+
+List getWeekdays() {
+  DateTime today = DateTime.now();
+  int cap = today.weekday;
+  today = today.subtract(Duration(days: today.weekday - 1));
+  List<String> dates = [];
+  for (int i = 0; i < cap - 1; i++) {
+    dates.add(getFormattedDate(today));
+
+    today = today.add(Duration(days: 1));
+  }
+
+  return dates;
 }

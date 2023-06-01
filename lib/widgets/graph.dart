@@ -1,9 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:separdianz/userdata.dart';
+
+import '../preferences.dart';
 
 class EfficiencyChart extends StatelessWidget {
-  const EfficiencyChart({super.key});
+  final UserData data;
+  EfficiencyChart({super.key, required this.data}) {
+    List days = getWeekdays();
+    print(days);
+    for (int i = 0; i < days.length; i++) {
+      if (data.progress.containsKey(days[i])) {
+        points
+            .add(FlSpot(i.toDouble() + 1, data.progress[days[i]]!.toDouble()));
+      } else {
+        points.add(FlSpot(i.toDouble() + 1, 0));
+      }
+    }
+  }
 
+  List<FlSpot> points = [];
   @override
   Widget build(BuildContext context) {
     return AspectRatio(
@@ -57,15 +73,7 @@ class EfficiencyChart extends StatelessWidget {
           LineChartBarData(
               color: Color.fromARGB(255, 176, 255, 217),
               //isCurved: true,
-              spots: [
-                FlSpot(1, 2),
-                FlSpot(2, 5),
-                FlSpot(3, 4),
-                FlSpot(4, 6.7),
-                FlSpot(5, 7),
-                FlSpot(6, 5),
-                FlSpot(7, 9.8)
-              ],
+              spots: points,
               dotData: FlDotData(show: false),
               belowBarData: BarAreaData(show: true))
         ],

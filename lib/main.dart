@@ -171,7 +171,7 @@ class _HomeState extends State<Home> {
             ),
             Padding(
               padding: const EdgeInsets.all(18.0),
-              child: EfficiencyChart(),
+              child: EfficiencyChart(data: data),
             ),
             Divider(
               color: Color.fromARGB(40, 255, 255, 255),

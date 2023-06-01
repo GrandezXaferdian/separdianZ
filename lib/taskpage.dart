@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 import 'package:separdianz/preferences.dart';
@@ -46,6 +47,9 @@ class _TaskPageState extends State<TaskPage> {
     totalseconds = Duration(seconds: cycleDuration);
     remainingseconds = Duration(seconds: cycleDuration);
   }
+
+  final player = AudioPlayer();
+
   Function()? parentdec;
   Function()? parentinc;
   Color prim = primary;
@@ -77,9 +81,14 @@ class _TaskPageState extends State<TaskPage> {
               //update_timer();
               increment_task();
               time = "Over!";
+              player.play(
+                AssetSource('finish.wav'),
+              );
               remainingseconds = totalseconds;
               running = false;
+
               over = false;
+
               return;
             }
             update_timer();
@@ -154,6 +163,7 @@ class _TaskPageState extends State<TaskPage> {
       appBar: AppBar(
           leading: IconButton(
               onPressed: () {
+                //Do not pop the page. Just send it to the background
                 Navigator.pop(context);
               },
               icon: const Icon(Icons.arrow_back_outlined)),
@@ -170,9 +180,9 @@ class _TaskPageState extends State<TaskPage> {
               icon: const Icon(Icons.settings),
               tooltip: 'Settings',
               onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                    content:
-                        Text('Settings is currently under construction!')));
+                player.play(
+                  AssetSource('finish.wav'),
+                );
               },
             ),
           ]),
