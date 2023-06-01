@@ -5,6 +5,7 @@ A project currently under development by Xaferdian and Sep
 ## Commit log
 
 [16/05/2023] - Creation of the log
+[01/06/2023] - Version 0.2.1
 
 
 ## Version 0.1 changes
