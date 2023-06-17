@@ -2,16 +2,29 @@ import 'package:flutter/material.dart';
 import 'package:separdianz/preferences.dart';
 
 class CreateTaskPage extends StatefulWidget {
-  const CreateTaskPage({super.key, required this.addfunc});
+  const CreateTaskPage(
+      {super.key,
+      required this.addfunc,
+      this.tasktitle = "",
+      this.removeHandler});
+  final String tasktitle;
   final Function(String taskname, int cycles, int duration) addfunc;
+  final Function()? removeHandler;
   @override
-  State<CreateTaskPage> createState() => _CreateTaskPageState();
+  State<CreateTaskPage> createState() =>
+      _CreateTaskPageState(tasktitle: tasktitle);
 }
 
 class _CreateTaskPageState extends State<CreateTaskPage> {
   final taskname = TextEditingController();
   final cycles = TextEditingController();
   final duration = TextEditingController();
+  String tasktitle;
+  _CreateTaskPageState({required this.tasktitle}) {
+    if (tasktitle != "") {
+      taskname.text = tasktitle;
+    }
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -56,6 +69,9 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
                   //TO DO: Implement checking of values here
                   widget.addfunc(taskname.text, int.parse(cycles.text),
                       int.parse(duration.text));
+                  if (widget.removeHandler != null) {
+                    widget.removeHandler!();
+                  }
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                       content: Text('${taskname.text} task created!')));

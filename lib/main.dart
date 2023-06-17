@@ -1,6 +1,7 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
 
 import 'dart:math';
+import 'package:flutter/services.dart';
 
 //Code by Xaferdian. Please remove these comments after reading to improve code clarity.
 
@@ -9,6 +10,9 @@ import 'package:flutter/material.dart'; //Material UI
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:percent_indicator/percent_indicator.dart'; //3rd party progress bar
 import 'package:fl_chart/fl_chart.dart'; //3rd party graphing widget
+import 'package:separdianz/taskpage.dart';
+import 'package:separdianz/taskuserdata.dart';
+import 'package:separdianz/todopage.dart';
 import 'package:separdianz/userdata.dart';
 
 //Packages segmented internally. Each file holds a definition of widget.
@@ -18,33 +22,42 @@ import 'package:separdianz/widgets/progresscard.dart'; //The widget that shows t
 import 'package:separdianz/taskitem.dart';
 //Color declarations to use throughout the document
 import 'package:separdianz/preferences.dart';
+import 'package:separdianz/widgets/summary.dart';
 
 //The main function which triggers the 'runApp' function that starts the app
 
 late Box box;
 Future<void> main() async {
   await Hive.initFlutter();
+  Hive.registerAdapter(TaskUserDataAdapter());
   Hive.registerAdapter(UserDataAdapter());
 
   box = await Hive.openBox(boxName);
 
-  checkUpdate(boxName);
+  if (Hive.box(boxName).containsKey(dataName)) {
+    print("Valid data present!");
+    checkUpdate(boxName);
+  } else {
+    box.put(
+      dataName,
+      UserData(
+          name: 'Grandez Xaferdian',
+          currentTasks: [],
+          completedTasks: [],
+          outdatedTasks: [],
+          progress: {},
+          lastUpdated: DateTime.now().toString(),
+          currentProgress: 0),
+    );
+  }
 
-  /*box.put(
-    dataName,
-    UserData(
-        name: 'Grandez Xaferdian',
-        currentTasks: [
-          ['Test', 2, 3, 45]
-        ],
-        completedTasks: [
-          ['Tsst', 3, 3, 45]
-        ],
-        outdatedTasks: [['Tgh', 0, 3, 45],['Tghdd', 0, 3, 45]],
-        progress: {'14-05-2023': 56},
-        lastUpdated: DateTime.now().toString(),
-        currentProgress: 0),
-  );*/
+  if (Hive.box(boxName).containsKey(taskDataName)) {
+    print("Valid task data present!");
+    print(box.get(taskDataName).tasks);
+  } else {
+    box.put(taskDataName,
+        TaskUserData(lastUpdated: DateTime.now().toString(), tasks: []));
+  }
 
   runApp(MainApp());
 }
@@ -99,17 +112,14 @@ class _HomeState extends State<Home> {
   //Ignore these data for now. Just know that these are the data that is used to construct the many avatars and many progress cards in the app.
 
   List<List> avatars = [
-    ["Your Progress", "assets/nahida.jpg", 0.2, primary],
-    ["Dainsleif", "assets/dainsleif.png", 0.66, otherAvatar],
-    ["Kazuha", "assets/kazuha.jpg", 0.76, otherAvatar],
-    ["Albedo", "assets/albedo.jpg", 0.96, otherAvatar],
-    ["Dainsleif", "assets/dainsleif.png", 0.66, otherAvatar],
+    ["", "assets/nahida.jpg", 0.2, primary],
   ];
 
   //The build method of a stateless widget is the one that 'builds' the widget when the app is created and the widget is created.
   @override
   Widget build(BuildContext context) {
     UserData data = box.get(dataName);
+    TaskUserData taskData = box.get(taskDataName);
     return Scaffold(
       //Every page should return a Scaffold. The Scaffold is the superior ancestor to every widget in a page. Its attributes are self explanatory
 
@@ -134,59 +144,87 @@ class _HomeState extends State<Home> {
               },
             ),
             IconButton(
-                onPressed: () {}, icon: const Icon(Icons.stacked_bar_chart))
+                onPressed: () async {
+                  List param =
+                      taskListKey.currentState!.calculateProgress(false);
+                  String progress = "*Overall Progress: ${param[2]}%*\n";
+                  progress +=
+                      "Time worked: ${(param[0] / 3600).toStringAsFixed(1)} hrs \n";
+                  progress +=
+                      "Time planned: ${(param[1] / 3600).toStringAsFixed(1)} hrs \n";
+                  if (taskListKey.currentState!.completedtasks.isNotEmpty) {
+                    progress += "\n";
+                    progress += "*COMPLETED TASKS* \n";
+                    progress += "\n";
+                    for (var element
+                        in taskListKey.currentState!.completedtasks) {
+                      progress +=
+                          "${element.name} - ${(element.completed * element.cycleDuration / 3600).toStringAsFixed(1)} hrs spent\n";
+                    }
+                  }
+
+                  progress += "\n";
+                  progress += "*TO DO* \n";
+                  progress += "\n";
+                  for (var element in taskListKey.currentState!.tasks) {
+                    progress +=
+                        "${element.name} - (${(element.completed * element.cycleDuration / 3600).toStringAsFixed(1)}/${(element.outof * element.cycleDuration / 3600).toStringAsFixed(1)}) \n";
+                  }
+
+                  print(progress);
+                  await Clipboard.setData(ClipboardData(text: progress));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Progress copied to clipboard!')));
+                },
+                icon: const Icon(Icons.copy))
           ]),
       // ignore: prefer_const_constructors
-      body: SingleChildScrollView(
-        physics: BouncingScrollPhysics(),
-        child: Column(
-          children: [
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              physics: BouncingScrollPhysics(),
-              //padding: const EdgeInsets.all(12),
-              child: Padding(
+      body: PageView(physics: BouncingScrollPhysics(), children: [
+        SingleChildScrollView(
+          physics: BouncingScrollPhysics(),
+          child: Column(
+            children: [
+              Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 15.0),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: avatars.map((e) {
-                    return ProfileAvatar(
-                        name: e[0],
-                        progress: e[2],
-                        picpath: e[1],
-                        barcolor: e[3],
-                        delete: () {
-                          setState(() {
-                            avatars.remove(e);
-                          });
-                        });
-                  }).toList(),
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    ProfileAvatar(
+                      progress: 0.7,
+                      name: data.name,
+                    ),
+                    Summary(
+                      key: summaryKey,
+                    )
+                  ],
                 ),
               ),
-            ),
-            Divider(
-              color: Color.fromARGB(40, 255, 255, 255),
-              endIndent: 15.0,
-              indent: 15.0,
-            ),
-            Padding(
-              padding: const EdgeInsets.all(18.0),
-              child: EfficiencyChart(data: data),
-            ),
-            Divider(
-              color: Color.fromARGB(40, 255, 255, 255),
-              endIndent: 15.0,
-              indent: 15.0,
-            ),
-            Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10.0, vertical: 8.0),
-                child: TaskList(
-                  data: data,
-                ))
-          ],
+              Divider(
+                color: Color.fromARGB(40, 255, 255, 255),
+                endIndent: 15.0,
+                indent: 15.0,
+              ),
+              Padding(
+                padding: const EdgeInsets.all(18.0),
+                child: EfficiencyChart(data: data),
+              ),
+              Divider(
+                color: Color.fromARGB(40, 255, 255, 255),
+                endIndent: 15.0,
+                indent: 15.0,
+              ),
+              Padding(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 10.0, vertical: 8.0),
+                  child: TaskList(
+                    key: taskListKey,
+                    data: data,
+                  ))
+            ],
+          ),
         ),
-      ),
+        TodoPage(data: taskData)
+      ]),
     );
   }
 }

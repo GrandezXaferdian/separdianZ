@@ -8,6 +8,8 @@ import 'package:separdianz/userdata.dart';
 import 'package:separdianz/widgets/progresscard.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 
+final GlobalKey<_TaskListState> taskListKey = GlobalKey<_TaskListState>();
+
 class Task {
   String name;
   int completed;
@@ -20,7 +22,7 @@ class Task {
       required this.completed,
       required this.outof,
       required this.cycleDuration,
-      this.elapsed = 5});
+      this.elapsed = 0});
 }
 
 class TaskItem extends StatefulWidget {
@@ -100,7 +102,7 @@ List<List> convertToList(List<Task> tasks) {
 }
 
 class TaskList extends StatefulWidget {
-  TaskList({super.key, required this.data}) {
+  TaskList({Key? key, required this.data}) : super(key: key) {
     contask = convertToTask(data.currentTasks);
     concompletedtask = convertToTask(data.completedTasks);
     conoutdatedtask = convertToTask(data.outdatedTasks);
@@ -128,28 +130,34 @@ class _TaskListState extends State<TaskList> with WidgetsBindingObserver {
   List<Task> outdatedtasks;
 
   add_task(String name, int cycles, int duration) {
+    print("Task add invoked");
     setState(() {
       tasks.add(Task(
           name: name, completed: 0, outof: cycles, cycleDuration: duration));
     });
   }
 
-  int calculateProgress() {
+  calculateProgress(bool progressAlone) {
+    //print('this is getting fired!');
     int dc = 0;
     int dof = 0;
     for (var element in tasks) {
-      dc += element.completed;
-      dof += element.outof;
+      dc += element.cycleDuration * element.completed + element.elapsed;
+      dof += element.outof * element.cycleDuration;
     }
 
     for (var element in completedtasks) {
-      dc += element.completed;
-      dof += element.outof;
+      dc += element.cycleDuration * element.completed + element.elapsed;
+      dof += element.outof * element.cycleDuration;
     }
 
-    int progress = (100 * (dc / dof)).ceil();
+    int progress = (dof != 0) ? (100 * (dc / dof)).ceil() : 0;
 
-    return progress;
+    if (progressAlone) {
+      return progress;
+    } else {
+      return [dc, dof, progress];
+    }
   }
 
   @override
@@ -160,7 +168,7 @@ class _TaskListState extends State<TaskList> with WidgetsBindingObserver {
       widget.data.currentTasks = convertToList(tasks);
       widget.data.completedTasks = convertToList(completedtasks);
       widget.data.outdatedTasks = convertToList(outdatedtasks);
-      widget.data.currentProgress = calculateProgress();
+      widget.data.currentProgress = calculateProgress(true);
       widget.data.lastUpdated = DateTime.now().toString();
       Box box = Hive.box(boxName);
       box.put(dataName, widget.data);
@@ -274,19 +282,24 @@ class ProgressTitle extends StatelessWidget {
   ProgressTitle({super.key, required this.tasklist, required this.complist}) {
     int dc = 0;
     int dof = 0;
-    tasklist.forEach((element) {
-      dc += element.completed;
-      dof += element.outof;
-    });
+    int cc = 0;
+    int oc = 0;
+    for (var element in tasklist) {
+      dc += element.cycleDuration * element.completed + element.elapsed;
+      dof += element.outof * element.cycleDuration;
+      cc += element.completed;
+      oc += element.outof;
+    }
 
-    complist.forEach((element) {
-      dc += element.completed;
-      dof += element.outof;
-    });
-
-    completed = dc;
-    outof = dof;
-    progress = (outof != 0) ? (100 * (completed / outof)).ceil() : 0;
+    for (var element in complist) {
+      dc += element.cycleDuration * element.completed + element.elapsed;
+      dof += element.outof * element.cycleDuration;
+      cc += element.completed;
+      oc += element.outof;
+    }
+    completed = cc;
+    outof = oc;
+    progress = (dof != 0) ? (100 * (dc / dof)).ceil() : 0;
   }
   final List<Task> tasklist;
   final List<Task> complist;
@@ -358,7 +371,7 @@ class CompletedTask extends StatelessWidget {
             children: [
               Text(taskobj.name, style: title_tertiary),
               Text(
-                '${timestring}spent',
+                timestring,
                 style: title_secondary_light,
               )
             ],

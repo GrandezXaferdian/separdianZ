@@ -3,8 +3,9 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:separdianz/taskitem.dart';
 import 'package:separdianz/userdata.dart';
 
-String boxName = 'testBox2';
-String dataName = 'userdata';
+String boxName = 'SepardianZ_DATA';
+String dataName = 'USERDATA';
+String taskDataName = 'USERDATA_TASK';
 
 Color primary = Color.fromARGB(255, 187, 255, 252);
 Color otherAvatar = Color.fromARGB(255, 247, 255, 173);
@@ -18,10 +19,13 @@ TextStyle title_secondary_light =
     TextStyle(fontSize: 18.0, color: text, fontWeight: FontWeight.bold);
 
 TextStyle microtitle_secondary_light =
-    TextStyle(fontSize: 18.0, color: text, fontWeight: FontWeight.bold);
+    TextStyle(fontSize: 12.0, color: text, fontWeight: FontWeight.bold);
 
 TextStyle bigtitle_secondary_light =
     TextStyle(fontSize: 60.0, color: text, fontWeight: FontWeight.bold);
+
+TextStyle midtitle_black =
+    TextStyle(fontSize: 20.0, color: Colors.black, fontWeight: FontWeight.bold);
 
 TextStyle title_tertiary =
     TextStyle(fontSize: 18.0, color: otherAvatar, fontWeight: FontWeight.bold);
@@ -34,9 +38,15 @@ ButtonStyle primaryButtonStyle = ButtonStyle(
     foregroundColor:
         MaterialStatePropertyAll<Color>(Color.fromARGB(255, 0, 0, 0)));
 
+ButtonStyle tertiaryButtonStyle = ButtonStyle(
+    backgroundColor: MaterialStatePropertyAll<Color>(otherAvatar),
+    foregroundColor:
+        MaterialStatePropertyAll<Color>(Color.fromARGB(255, 0, 0, 0)));
+
 String convertTimeToString(int seconds) {
   String timestr = '';
   bool hrs = false;
+  bool mins = false;
   Duration time = Duration(seconds: seconds);
   if (time.inHours > 0) {
     timestr += '${time.inHours} h ';
@@ -45,9 +55,10 @@ String convertTimeToString(int seconds) {
   if (time.inMinutes % 60 > 0) {
     timestr += '${time.inMinutes % 60} m ';
     seconds -= time.inMinutes * 60;
+    mins = true;
   }
 
-  if (!hrs) {
+  if (!hrs && !mins) {
     timestr += '${time.inSeconds % 60} s ';
   }
 

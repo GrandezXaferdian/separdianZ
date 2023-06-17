@@ -6,6 +6,8 @@ A project currently under development by Xaferdian and Sep
 
 [16/05/2023] - Creation of the log
 [01/06/2023] - Version 0.2.1
+[06/06/2023] - Version 0.2.2
+[14/06/2023] - Version 0.2.3
 
 
 ## Version 0.1 changes
@@ -25,18 +27,30 @@ Added new features:
 1) Graph widget now works with retrieving performance of current week 
 2) A sound plays after timer is over
 
-## In next version (v.0.2.2)
+## Version 0.2.2 changes
 
 Flutter task list work
-1) Make the timer run in background and give a notification when time is complete
-2) Make provision to store seconds elapsed value
+1) Made provision to store seconds elapsed value It is also stored as part of the data.
+2) A new page is created to record unplanned tasks called TodoPage
+
+## Version 0.2.3 changes
+
+Flutter app functionality - Various bug fixes just to make the app barely usable
+
+## In next version (v.0.2.4)
+
+Periodic notifications, Bug fixes, Provision to share progress
+Minor additions include
+1) Prevent the task to be dismissable
+2) Add a step up button to add a new cycle (or reduce a cycle)
+3) Make the time save when the user presses the back button as well
+4) Add provision to hide tasks completed
 
 ## To do
 
 Enhancements
 1) Make the progress percent reflect the tasks completed duration than the number of cycles
-2) Make each task widget reflect the total remaining time to complete the task, and a running color if the task is currently running. 
-3) If user attempts to run another task while previous task is running, then user must be prompted with a warning to pause the previous task before starting this task. 
+-
 4) Add a proper icon for the splash screen
 5) Organize the files and codes properly
 

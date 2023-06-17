@@ -28,7 +28,7 @@ class EfficiencyChart extends StatelessWidget {
         maxX: 7,
         minX: 1,
         minY: 0,
-        maxY: 10,
+        maxY: 100,
         gridData: FlGridData(
             show: true,
             drawHorizontalLine: false,

@@ -40,7 +40,8 @@ dependencies:
   hive_flutter: ^1.1.0
   flutter_slidable: ^3.0.0
   audioplayers: ^4.1.0
-
+  awesome_notifications: ^0.0.6
+  
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -74,6 +75,8 @@ flutter:
     - assets/kazuha.jpg
     - assets/albedo.jpg
     - assets/finish.wav
+    - assets/todo_night.jpg
+    - assets/todo_morning.jpg
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see
