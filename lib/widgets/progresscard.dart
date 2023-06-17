@@ -9,7 +9,7 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 class ProgressCard extends StatefulWidget {
   const ProgressCard({
     super.key,
-    this.task = "Task",
+    required this.task,
     this.completed = 0,
     this.outof = 1,
     required this.remove,
@@ -19,6 +19,7 @@ class ProgressCard extends StatefulWidget {
     required this.dectask,
     required this.delete,
     required this.elapsedUpdate,
+    required this.oinctask,
   });
   final String task;
   final int completed;
@@ -29,6 +30,7 @@ class ProgressCard extends StatefulWidget {
   final int elapsed;
   final Function() inctask;
   final Function() dectask;
+  final Function() oinctask;
   final Function(int) elapsedUpdate;
 
   @override
@@ -57,6 +59,15 @@ class _ProgressCardState extends State<ProgressCard> {
     print('$completed/$outof');
   }
 
+  void oincrement_task() {
+    widget.oinctask();
+    setState(() {
+      outof++;
+      prim = primary;
+    });
+    print('$completed/$outof');
+  }
+
   void decrement_task() {
     widget.dectask();
     setState(() {
@@ -81,24 +92,44 @@ class _ProgressCardState extends State<ProgressCard> {
       this.outof = 1,
       this.cycleDuration = 10,
       this.elapsed = 0});
+
   @override
   Widget build(BuildContext context) {
     return Slidable(
       key: UniqueKey(),
-      endActionPane: ActionPane(
-          dismissible:
-              DismissiblePane(key: UniqueKey(), onDismissed: widget.delete),
-          motion: ScrollMotion(),
-          children: <Widget>[
-            SlidableAction(
-                onPressed: (context) {
-                  widget.delete();
-                },
-                backgroundColor: error,
-                foregroundColor: Colors.black,
-                icon: Icons.delete,
-                label: 'Delete')
-          ]),
+      endActionPane: ActionPane(motion: ScrollMotion(), children: <Widget>[
+        SlidableAction(
+            onPressed: (context) {
+              showDialog<String>(
+                context: context,
+                builder: (BuildContext context) => AlertDialog(
+                  backgroundColor: card_bg,
+                  titleTextStyle: title_tertiary,
+                  contentTextStyle: microtitle_secondary_light,
+                  title: const Text('Delete Task'),
+                  content: Text(
+                      'Are you sure you wish to delete task "${widget.task}" ?'),
+                  actions: <Widget>[
+                    TextButton(
+                      onPressed: () => Navigator.pop(context, 'No'),
+                      child: const Text('No'),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        widget.delete();
+                        Navigator.pop(context, 'Yes');
+                      },
+                      child: const Text('Yes'),
+                    ),
+                  ],
+                ),
+              );
+            },
+            backgroundColor: error,
+            foregroundColor: Colors.black,
+            icon: Icons.delete,
+            label: 'Delete')
+      ]),
       child: Card(
         color: card_bg,
         child: Padding(
@@ -165,6 +196,7 @@ class _ProgressCardState extends State<ProgressCard> {
                                           task: widget.task,
                                           completed: completed,
                                           parentinc: increment_task,
+                                          parentoinc: oincrement_task,
                                           parentdec: decrement_task,
                                           outof: outof,
                                           cycleDuration: cycleDuration,

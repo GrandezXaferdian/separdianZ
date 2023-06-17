@@ -25,53 +25,6 @@ class Task {
       this.elapsed = 0});
 }
 
-class TaskItem extends StatefulWidget {
-  const TaskItem(
-      {super.key,
-      this.taskname = "Task",
-      this.completed = 0,
-      this.outof = 1,
-      required this.onremove,
-      this.cycleDuration = 15,
-      required this.elapsed,
-      required this.inctask,
-      required this.dectask,
-      required this.delete,
-      required this.elapsedUpdate});
-  final int elapsed;
-  final String taskname;
-  final int completed;
-  final int outof;
-  final int cycleDuration;
-  final Function() onremove;
-  final Function() inctask;
-  final Function() dectask;
-  final Function() delete;
-  final Function(int) elapsedUpdate;
-
-  @override
-  State<TaskItem> createState() => _TaskItemState();
-}
-
-class _TaskItemState extends State<TaskItem> {
-  @override
-  Widget build(BuildContext context) {
-    return ProgressCard(
-      key: ObjectKey(widget.taskname),
-      task: widget.taskname,
-      outof: widget.outof,
-      completed: widget.completed,
-      cycleDuration: widget.cycleDuration,
-      elapsed: widget.elapsed,
-      remove: widget.onremove,
-      inctask: widget.inctask,
-      dectask: widget.dectask,
-      delete: widget.delete,
-      elapsedUpdate: widget.elapsedUpdate,
-    );
-  }
-}
-
 List<Task> convertToTask(List<List> tasks) {
   List<Task> converted = [];
 
@@ -119,17 +72,27 @@ class TaskList extends StatefulWidget {
 }
 
 class _TaskListState extends State<TaskList> with WidgetsBindingObserver {
+  bool hideCompletedTasks = false;
   _TaskListState(
       {required this.tasks,
       required this.completedtasks,
       required this.outdatedtasks});
+
   List<Task> tasks;
 
   List<Task> completedtasks;
 
   List<Task> outdatedtasks;
 
-  add_task(String name, int cycles, int duration) {
+  void modifier(Function() modify) {
+    setState(() {
+      modify();
+    });
+
+    print("Modified!");
+  }
+
+  void addTask(String name, int cycles, int duration) {
     print("Task add invoked");
     setState(() {
       tasks.add(Task(
@@ -163,16 +126,15 @@ class _TaskListState extends State<TaskList> with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
-    if (state == AppLifecycleState.detached) {
-      print('Attempting to save!');
-      widget.data.currentTasks = convertToList(tasks);
-      widget.data.completedTasks = convertToList(completedtasks);
-      widget.data.outdatedTasks = convertToList(outdatedtasks);
-      widget.data.currentProgress = calculateProgress(true);
-      widget.data.lastUpdated = DateTime.now().toString();
-      Box box = Hive.box(boxName);
-      box.put(dataName, widget.data);
-    }
+
+    print('Attempting to save!');
+    widget.data.currentTasks = convertToList(tasks);
+    widget.data.completedTasks = convertToList(completedtasks);
+    widget.data.outdatedTasks = convertToList(outdatedtasks);
+    widget.data.currentProgress = calculateProgress(true);
+    widget.data.lastUpdated = DateTime.now().toString();
+    Box box = Hive.box(boxName);
+    box.put(dataName, widget.data);
   }
 
   @override
@@ -195,20 +157,22 @@ class _TaskListState extends State<TaskList> with WidgetsBindingObserver {
           padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 8.0),
           child: ProgressTitle(tasklist: tasks, complist: completedtasks),
         ),
-        Column(
-          children: completedtasks.map((task) {
-            return CompletedTask(
-                key: ObjectKey(task.name),
-                taskobj: task,
-                removefunc: () {
-                  setState(() {
-                    completedtasks.remove(task);
-                  });
-                });
-          }).toList(),
-        ),
+        (!hideCompletedTasks)
+            ? Column(
+                children: completedtasks.map((task) {
+                  return CompletedTask(
+                      key: ObjectKey(task.name),
+                      taskobj: task,
+                      removefunc: () {
+                        setState(() {
+                          completedtasks.remove(task);
+                        });
+                      });
+                }).toList(),
+              )
+            : Container(),
         ((completedtasks.isNotEmpty)
-            ? Divider(
+            ? const Divider(
                 color: Color.fromARGB(40, 255, 255, 255),
                 endIndent: 15.0,
                 indent: 15.0,
@@ -216,13 +180,14 @@ class _TaskListState extends State<TaskList> with WidgetsBindingObserver {
             : Container()),
         Column(
           children: tasks.map((task) {
-            return TaskItem(
-                taskname: task.name,
+            return ProgressCard(
+                key: ObjectKey(task.name),
+                task: task.name,
                 completed: task.completed,
                 outof: task.outof,
                 cycleDuration: task.cycleDuration,
                 elapsed: task.elapsed,
-                onremove: () {
+                remove: () {
                   setState(() {
                     completedtasks.add(task);
                     tasks.remove(task);
@@ -231,6 +196,11 @@ class _TaskListState extends State<TaskList> with WidgetsBindingObserver {
                 inctask: () {
                   setState(() {
                     task.completed++;
+                  });
+                },
+                oinctask: () {
+                  setState(() {
+                    task.outof++;
                   });
                 },
                 dectask: () {
@@ -250,7 +220,7 @@ class _TaskListState extends State<TaskList> with WidgetsBindingObserver {
                 });
           }).toList(),
         ),
-        AddTask(addfunc: add_task),
+        AddTask(addfunc: addTask),
         Column(
           children: outdatedtasks.map((e) {
             return OutdatedTask(

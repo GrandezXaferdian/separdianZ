@@ -8,7 +8,7 @@ A project currently under development by Xaferdian and Sep
 [01/06/2023] - Version 0.2.1
 [06/06/2023] - Version 0.2.2
 [14/06/2023] - Version 0.2.3
-
+[17/06/2023] - Version 0.2.4
 
 ## Version 0.1 changes
 (This is the first ever proper test version)
@@ -36,21 +36,23 @@ Flutter task list work
 ## Version 0.2.3 changes
 
 Flutter app functionality - Various bug fixes just to make the app barely usable
+Provision to share progress
 
-## In next version (v.0.2.4)
+## Version 0.2.4 changes
 
-Periodic notifications, Bug fixes, Provision to share progress
-Minor additions include
+Various bug fixes and functionality optimizations such as 
 1) Prevent the task to be dismissable
-2) Add a step up button to add a new cycle (or reduce a cycle)
+2) Add a step up button to add a new cycle
 3) Make the time save when the user presses the back button as well
 4) Add provision to hide tasks completed
+
+## In next version (v.0.2.5)
+
+Periodic notifications while away.
 
 ## To do
 
 Enhancements
-1) Make the progress percent reflect the tasks completed duration than the number of cycles
--
 4) Add a proper icon for the splash screen
 5) Organize the files and codes properly
 

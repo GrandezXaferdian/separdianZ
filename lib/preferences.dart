@@ -7,16 +7,27 @@ String boxName = 'SepardianZ_DATA';
 String dataName = 'USERDATA';
 String taskDataName = 'USERDATA_TASK';
 
+String version = 'v.0.2.4';
+String updateInfo = '''
+Version 0.2.4 changes
+
+Various functionality optimizations such as 
+1) Prevent the task to be dismissable
+2) Add a step up button to add a new cycle
+3) Make the time save when the user presses the back button as well
+4) Add provision to hide tasks completed''';
 Color primary = Color.fromARGB(255, 187, 255, 252);
 Color otherAvatar = Color.fromARGB(255, 247, 255, 173);
 Color base_bg = Color.fromARGB(255, 30, 34, 34);
 Color progress_bg = Color.fromARGB(255, 22, 25, 25);
 Color text = Color.fromARGB(255, 206, 206, 206);
-Color card_bg = Color.fromARGB(146, 50, 50, 50);
+Color card_bg = Color.fromARGB(255, 38, 40, 40);
 Color error = Color.fromARGB(255, 255, 101, 101);
 
 TextStyle title_secondary_light =
     TextStyle(fontSize: 18.0, color: text, fontWeight: FontWeight.bold);
+
+TextStyle description = TextStyle(fontSize: 16.0, color: text);
 
 TextStyle microtitle_secondary_light =
     TextStyle(fontSize: 12.0, color: text, fontWeight: FontWeight.bold);
@@ -24,10 +35,16 @@ TextStyle microtitle_secondary_light =
 TextStyle bigtitle_secondary_light =
     TextStyle(fontSize: 60.0, color: text, fontWeight: FontWeight.bold);
 
+TextStyle midtitle_primary =
+    TextStyle(fontSize: 25.0, color: primary, fontWeight: FontWeight.bold);
+
 TextStyle midtitle_black =
     TextStyle(fontSize: 20.0, color: Colors.black, fontWeight: FontWeight.bold);
 
 TextStyle title_tertiary =
+    TextStyle(fontSize: 18.0, color: otherAvatar, fontWeight: FontWeight.bold);
+
+TextStyle title_primary =
     TextStyle(fontSize: 18.0, color: otherAvatar, fontWeight: FontWeight.bold);
 
 TextStyle title_error =

@@ -10,6 +10,7 @@ import 'package:flutter/material.dart'; //Material UI
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:percent_indicator/percent_indicator.dart'; //3rd party progress bar
 import 'package:fl_chart/fl_chart.dart'; //3rd party graphing widget
+import 'package:separdianz/pages/settings.dart';
 import 'package:separdianz/taskpage.dart';
 import 'package:separdianz/taskuserdata.dart';
 import 'package:separdianz/todopage.dart';
@@ -71,10 +72,19 @@ class MainApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       //Material App Instantiation
-
+      color: base_bg,
+      themeMode: ThemeMode.dark,
       home:
           Home(), //Home is the first page to appear. Its definition is given later on in the code
       theme: ThemeData(
+          primaryColorDark: base_bg,
+          textTheme: TextTheme(
+              headlineSmall: midtitle_primary,
+              bodyMedium: microtitle_secondary_light,
+              bodySmall: microtitle_secondary_light),
+          //bodyLarge: microtitle_secondary_light),
+          primaryColor: base_bg,
+          cardColor: card_bg,
           //This class instantiation sets the overall font of the application and few other preferences, such as style of every text button.
           inputDecorationTheme: InputDecorationTheme(
               hintStyle: TextStyle(color: text),
@@ -87,6 +97,10 @@ class MainApp extends StatelessWidget {
               border: OutlineInputBorder(
                   borderSide: BorderSide(color: primary, width: 3.0))),
           fontFamily: 'Default',
+          dialogTheme: DialogTheme(
+              backgroundColor: base_bg,
+              titleTextStyle: title_primary,
+              contentTextStyle: description),
           textButtonTheme: TextButtonThemeData(
               style: TextButton.styleFrom(
                   foregroundColor: Color.fromARGB(255, 187, 255, 252)))),
@@ -115,6 +129,13 @@ class _HomeState extends State<Home> {
     ["", "assets/nahida.jpg", 0.2, primary],
   ];
 
+  @override
+  void initState() {
+    super.initState();
+
+    // Register the callback
+  }
+
   //The build method of a stateless widget is the one that 'builds' the widget when the app is created and the widget is created.
   @override
   Widget build(BuildContext context) {
@@ -139,8 +160,8 @@ class _HomeState extends State<Home> {
               icon: const Icon(Icons.settings),
               tooltip: 'Settings',
               onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('${data.name} is your username!')));
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => SettingsPage()));
               },
             ),
             IconButton(

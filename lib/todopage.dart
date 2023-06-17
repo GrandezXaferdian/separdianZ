@@ -38,6 +38,17 @@ class _TodoPageState extends State<TodoPage>
       todoList.add(taskname.text);
     });
     taskname.clear();
+    updateBox();
+  }
+
+  removeTask(task) {
+    setState(() {
+      todoList.remove(task);
+    });
+    updateBox();
+  }
+
+  updateBox() {
     Box box = Hive.box(boxName);
     widget.data.tasks = todoList;
     widget.data.lastUpdated = DateTime.now().toString();
@@ -84,9 +95,7 @@ class _TodoPageState extends State<TodoPage>
                 .map((e) => TodoTask(
                       title: e,
                       removeHandler: () {
-                        setState(() {
-                          todoList.remove(e);
-                        });
+                        removeTask(e);
                       },
                     ))
                 .toList(),
@@ -167,7 +176,7 @@ class TodoTask extends StatelessWidget {
                     context,
                     MaterialPageRoute(
                         builder: (context) => CreateTaskPage(
-                              addfunc: taskListKey.currentState!.add_task,
+                              addfunc: taskListKey.currentState!.addTask,
                               tasktitle: title,
                               removeHandler: removeHandler,
                             )));
